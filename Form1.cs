@@ -72,6 +72,25 @@ namespace Minesweeper {
             ResizeGame();
         }
 
+        private void StartCustomGame(object sender, EventArgs e) {
+            customFieldDialog.Width = Game.Width;
+            customFieldDialog.Height = Game.Height;
+            customFieldDialog.Mines = Game.Mines;
+
+            if (customFieldDialog.ShowDialog() != DialogResult.OK) return;
+
+            int width = InRange(customFieldDialog.Width, 9, 24);
+            int height = InRange(customFieldDialog.Width, 9, 30);
+            int mines = InRange(customFieldDialog.Mines, 10, (width - 1) * (height - 1));
+
+            Game.NewGame(width, height, mines);
+
+            UncheckNewGameButtons();
+            customButton.Checked = true;
+
+            ResizeGame();
+        }
+
         private int InRange(int number, int min, int max) {
             if (number < min) return min;
             if (number > max) return max;
@@ -178,6 +197,12 @@ namespace Minesweeper {
                 }
 
                 e.Graphics.DrawSharpUpscaledImage(bitmap, transform.Rectangle);
+
+                if (Screenshot) {
+                    Screenshot = false;
+
+                    SaveImage(bitmap);
+                }
             }
         }
 
@@ -350,31 +375,48 @@ namespace Minesweeper {
             panel.Invalidate();
         }
 
-        private void ShowBestTimes(object sender, EventArgs e) {
-            throw new NotImplementedException();
+        private bool Screenshot = false;
+
+        private void SaveImage(object sender, EventArgs e) {
+            Screenshot = true;
+            panel.Invalidate();
+        }
+
+        private void SaveImage(Image image) {
+            // copy to clipboard
+            Clipboard.SetImage(image);
+
+            string filename = "minesweeper";
+            if (Game.Win) filename += "_" + getTime(Game.Timer);
+            filename += ".png";
+
+            // open save dialog
+            SaveFileDialog dialog = new SaveFileDialog();
+            dialog.AddExtension = true;
+            dialog.Filter = "PNG Image|*.png|All Files|*";
+            dialog.Title = "Save Screenshot";
+            dialog.FileName = filename;
+            if (dialog.ShowDialog() == DialogResult.OK) {
+                image.Save(dialog.FileName, System.Drawing.Imaging.ImageFormat.Png);
+            }
+        }
+
+        private string getTime(int seconds) {
+            int hours = seconds / 3600;
+            seconds %= 3600;
+            int minutes = seconds / 60;
+            seconds %= 60;
+
+            string time = "";
+            if (hours > 0) time += hours + "h";
+            if (minutes > 0) time += minutes + "m";
+            time += seconds + "s";
+
+            return time;
         }
 
         private void FormResize(object sender, EventArgs e) {
             panel.Invalidate();
-        }
-
-        private void StartCustomGame(object sender, EventArgs e) {
-            customFieldDialog.Width = Game.Width;
-            customFieldDialog.Height = Game.Height;
-            customFieldDialog.Mines = Game.Mines;
-
-            if (customFieldDialog.ShowDialog() != DialogResult.OK) return;
-
-            int width = InRange(customFieldDialog.Width, 9, 24);
-            int height = InRange(customFieldDialog.Width, 9, 30);
-            int mines = InRange(customFieldDialog.Mines, 10, (width - 1) * (height - 1));
-
-            Game.NewGame(width, height, mines);
-
-            UncheckNewGameButtons();
-            customButton.Checked = true;
-
-            ResizeGame();
         }
 
         private void ToggleMarks(object sender, EventArgs e) {

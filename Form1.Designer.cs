@@ -39,7 +39,7 @@
             this.colorButton = new System.Windows.Forms.MenuItem();
             this.soundButton = new System.Windows.Forms.MenuItem();
             this.separator3 = new System.Windows.Forms.MenuItem();
-            this.bestTimesButton = new System.Windows.Forms.MenuItem();
+            this.saveButton = new System.Windows.Forms.MenuItem();
             this.separator4 = new System.Windows.Forms.MenuItem();
             this.exitButton = new System.Windows.Forms.MenuItem();
             this.panel = new Minesweeper.DoubleBufferedPanel();
@@ -70,7 +70,7 @@
             this.colorButton,
             this.soundButton,
             this.separator3,
-            this.bestTimesButton,
+            this.saveButton,
             this.separator4,
             this.exitButton});
             this.gameButton.Text = "&Game";
@@ -138,11 +138,11 @@
             this.separator3.Index = 10;
             this.separator3.Text = "-";
             // 
-            // bestTimesButton
+            // saveButton
             // 
-            this.bestTimesButton.Index = 11;
-            this.bestTimesButton.Text = "Best &Times...";
-            this.bestTimesButton.Click += new System.EventHandler(this.ShowBestTimes);
+            this.saveButton.Index = 11;
+            this.saveButton.Text = "Sa&ve Screenshot...";
+            this.saveButton.Click += new System.EventHandler(this.SaveImage);
             // 
             // separator4
             // 
@@ -202,7 +202,7 @@
         private System.Windows.Forms.MenuItem colorButton;
         private System.Windows.Forms.MenuItem soundButton;
         private System.Windows.Forms.MenuItem separator3;
-        private System.Windows.Forms.MenuItem bestTimesButton;
+        private System.Windows.Forms.MenuItem saveButton;
         private System.Windows.Forms.MenuItem separator4;
         private System.Windows.Forms.MenuItem exitButton;
     }
