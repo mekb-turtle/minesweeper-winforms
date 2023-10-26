@@ -79,8 +79,8 @@ namespace Minesweeper {
 
             if (customFieldDialog.ShowDialog() != DialogResult.OK) return;
 
-            int width = InRange(customFieldDialog.Width, 9, 24);
-            int height = InRange(customFieldDialog.Width, 9, 30);
+            int width = InRange(customFieldDialog.Width, 9, 30);
+            int height = InRange(customFieldDialog.Width, 9, 24);
             int mines = InRange(customFieldDialog.Mines, 10, (width - 1) * (height - 1));
 
             Game.NewGame(width, height, mines);
