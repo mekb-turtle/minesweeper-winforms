@@ -2,10 +2,12 @@
 using Minesweeper.Rendering;
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Media;
 using System.Windows.Forms;
 using static Minesweeper.Game.Tile;
+using static Minesweeper.Rendering.DrawingUtils;
 
 namespace Minesweeper {
     public partial class Form1 : Form {
@@ -49,7 +51,7 @@ namespace Minesweeper {
             UncheckNewGameButtons();
             beginnerButton.Checked = true;
 
-            ResizeWindow();
+            ResizeGame();
         }
 
         private void StartIntermediateGame(object sender, EventArgs e) {
@@ -58,7 +60,7 @@ namespace Minesweeper {
             UncheckNewGameButtons();
             intermediateButton.Checked = true;
 
-            ResizeWindow();
+            ResizeGame();
         }
 
         private void StartExpertGame(object sender, EventArgs e) {
@@ -67,7 +69,7 @@ namespace Minesweeper {
             UncheckNewGameButtons();
             expertButton.Checked = true;
 
-            ResizeWindow();
+            ResizeGame();
         }
 
         private int InRange(int number, int min, int max) {
@@ -78,7 +80,7 @@ namespace Minesweeper {
 
         private CustomFieldDialog customFieldDialog = new CustomFieldDialog();
 
-        private void ResizeWindow() {
+        private void ResizeGame() {
             // set info panel rect
             infoPanel.X = 9;
             infoPanel.Y = 9;
@@ -105,54 +107,77 @@ namespace Minesweeper {
             timerDisplay.Y = (infoPanel.Height - timerDisplay.Height) / 2 + infoPanel.Y;
             face.Y = (infoPanel.Height - face.Height) / 2 + infoPanel.Y + 1;
 
-            // set client size
-            Size = new Size(
-                Size.Width - ClientSize.Width + tileBoard.Width + 20 + panel.Left,
-                Size.Height - ClientSize.Height + tileBoard.Height + 63 + panel.Top);
+            // set main panel size
+            gamePanel.Width = tileBoard.Width + 20;
+            gamePanel.Height = tileBoard.Height + 63;
+
+            // set minimum window size
+            MinimumSize = new Size(Width - panel.Width + gamePanel.Width, Height - panel.Height + gamePanel.Height);
 
             panel.Invalidate();
         }
 
-        private Rectangle infoPanel = new Rectangle(), tileBoard = new Rectangle(), flagsDisplay = new Rectangle(), timerDisplay = new Rectangle(), face = new Rectangle();
+        private Rectangle
+            gamePanel = new Rectangle(),
+            infoPanel = new Rectangle(),
+            tileBoard = new Rectangle(),
+            flagsDisplay = new Rectangle(),
+            timerDisplay = new Rectangle(),
+            face = new Rectangle();
 
         private void PanelPaint(object sender, PaintEventArgs e) {
-            // background
-            e.Graphics.Clear(Color.Silver);
-            e.Graphics.FillRectangle(Brushes.White, new Rectangle(0, 0, panel.Width, 3));
-            e.Graphics.FillRectangle(Brushes.White, new Rectangle(0, 0, 3, panel.Height));
+            e.Graphics.Clear(panel.BackColor);
 
-            // borders
-            DrawingUtils.DrawBorder(e.Graphics, infoPanel, 2);
-            DrawingUtils.DrawBorderOutside(e.Graphics, tileBoard, 3);
-            DrawingUtils.DrawBorderOutside(e.Graphics, flagsDisplay, 1);
-            DrawingUtils.DrawBorderOutside(e.Graphics, timerDisplay, 1);
-            DrawingUtils.DrawBorderOutside(e.Graphics, face, 1, Brushes.Gray, Brushes.Gray);
+            Transform transform = getFitMode(gamePanel.Size, ClientSize);
 
-            // draw flags and timer
-            DrawingUtils.RenderDigits(Game.Flags, 3, e.Graphics, digitSpriteSheet, flagsDisplay.Location);
-            DrawingUtils.RenderDigits(Game.Timer, 3, e.Graphics, digitSpriteSheet, timerDisplay.Location);
+            using (Bitmap bitmap = new Bitmap(gamePanel.Width, gamePanel.Height)) {
+                using (Graphics g = Graphics.FromImage(bitmap)) {
+                    g.InterpolationMode = InterpolationMode.NearestNeighbor;
 
-            int faceSprite = 4;
+                    // background
+                    g.Clear(Color.Silver);
 
-            if (Game.Win) faceSprite = 1;
-            if (Game.Lose) faceSprite = 2;
-            if (tileMouseDown) faceSprite = 3;
-            if (faceMouseDown) faceSprite = 0;
+                    // borders
+                    g.FillRectangle(Brushes.White, 0, 0, gamePanel.Width, 3);
+                    g.FillRectangle(Brushes.White, 0, 0, 3, gamePanel.Height);
+                    g.DrawBorder(infoPanel, 2);
+                    g.DrawBorderOutside(tileBoard, 3);
+                    g.DrawBorderOutside(flagsDisplay, 1);
+                    g.DrawBorderOutside(timerDisplay, 1);
+                    g.FillRectangle(Brushes.Gray, face);
+                    g.DrawBorderOutside(face, 1, Brushes.Gray, Brushes.Gray);
 
-            // draw face
-            e.Graphics.DrawImage(faceSpriteSheet.getSprite(0, faceSprite), face);
+                    // draw flags and timer
+                    g.FillRectangle(Brushes.Black, flagsDisplay);
+                    g.FillRectangle(Brushes.Black, timerDisplay);
+                    g.RenderDigits(Game.Flags, 3, digitSpriteSheet, flagsDisplay.Location);
+                    g.RenderDigits(Game.Timer, 3, digitSpriteSheet, timerDisplay.Location);
 
-            // draw board
-            for (int x = 0; x < Game.Width; x++) {
-                for (int y = 0; y < Game.Height; y++) {
-                    Tile tile = Game.GetTile(new Position(x, y));
+                    int faceSprite = 4;
 
-                    e.Graphics.DrawImage(
-                        tileSpriteSheet.getSprite(0, GetTileSprite(tile)),
-                        new Point(
-                            x * tileSpriteSheet.GridSize.Width + tileBoard.X,
-                            y * tileSpriteSheet.GridSize.Height + tileBoard.Y));
+                    if (Game.Win) faceSprite = 1;
+                    if (Game.Lose) faceSprite = 2;
+                    if (tileMouseDown) faceSprite = 3;
+                    if (faceMouseDown) faceSprite = 0;
+
+                    // draw face
+                    g.DrawImage(faceSpriteSheet.getSprite(0, faceSprite), face);
+
+                    // draw board
+                    for (int x = 0; x < Game.Width; x++) {
+                        for (int y = 0; y < Game.Height; y++) {
+                            Tile tile = Game.GetTile(new Position(x, y));
+
+                            g.DrawImage(
+                                tileSpriteSheet.getSprite(0, GetTileSprite(tile)),
+                                new PointF(
+                                    x * tileSpriteSheet.GridSize.Width + tileBoard.X,
+                                    y * tileSpriteSheet.GridSize.Height + tileBoard.Y));
+                        }
+                    }
                 }
+
+                e.Graphics.DrawSharpUpscaledImage(bitmap, transform.Rectangle);
             }
         }
 
@@ -200,7 +225,16 @@ namespace Minesweeper {
 
         private bool faceMouseDown_ = false;
         private bool tileMouseDown_ = false;
-        private Point cursorLocation = new Point();
+        private Point cursorLocation_ = new Point();
+
+        private Point cursorLocation {
+            get {
+                Transform transform = getFitMode(gamePanel.Size, ClientSize);
+                return new Point(
+                    (int)((cursorLocation_.X - transform.Rectangle.X) / transform.Scale),
+                    (int)((cursorLocation_.Y - transform.Rectangle.Y) / transform.Scale));
+            }
+        }
 
         private bool faceMouseDown {
             get {
@@ -280,7 +314,7 @@ namespace Minesweeper {
         }
 
         private void GameMouseDown(object sender, MouseEventArgs e) {
-            cursorLocation = e.Location;
+            cursorLocation_ = e.Location;
 
             if (e.Button == MouseButtons.Left) {
                 if (face.Contains(cursorLocation))
@@ -295,7 +329,7 @@ namespace Minesweeper {
         }
 
         private void GameMouseUp(object sender, MouseEventArgs e) {
-            cursorLocation = e.Location;
+            cursorLocation_ = e.Location;
 
             if (e.Button == MouseButtons.Left) {
                 if (faceMouseDown)
@@ -311,13 +345,17 @@ namespace Minesweeper {
         }
 
         private void GameMouseMove(object sender, MouseEventArgs e) {
-            cursorLocation = e.Location;
+            cursorLocation_ = e.Location;
 
             panel.Invalidate();
         }
 
         private void ShowBestTimes(object sender, EventArgs e) {
             throw new NotImplementedException();
+        }
+
+        private void FormResize(object sender, EventArgs e) {
+            panel.Invalidate();
         }
 
         private void StartCustomGame(object sender, EventArgs e) {
@@ -336,7 +374,7 @@ namespace Minesweeper {
             UncheckNewGameButtons();
             customButton.Checked = true;
 
-            ResizeWindow();
+            ResizeGame();
         }
 
         private void ToggleMarks(object sender, EventArgs e) {

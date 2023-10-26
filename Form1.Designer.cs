@@ -26,7 +26,6 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.gameTimer = new System.Windows.Forms.Timer(this.components);
-            this.panel = new Minesweeper.DoubleBufferedPanel();
             this.menuBar = new System.Windows.Forms.MainMenu(this.components);
             this.gameButton = new System.Windows.Forms.MenuItem();
             this.newButton = new System.Windows.Forms.MenuItem();
@@ -43,25 +42,13 @@
             this.bestTimesButton = new System.Windows.Forms.MenuItem();
             this.separator4 = new System.Windows.Forms.MenuItem();
             this.exitButton = new System.Windows.Forms.MenuItem();
+            this.panel = new Minesweeper.DoubleBufferedPanel();
             this.SuspendLayout();
             // 
             // gameTimer
             // 
             this.gameTimer.Interval = 1000;
             this.gameTimer.Tick += new System.EventHandler(this.timerTick);
-            // 
-            // panel
-            // 
-            this.panel.BackColor = System.Drawing.Color.Silver;
-            this.panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel.Location = new System.Drawing.Point(0, 0);
-            this.panel.Name = "panel";
-            this.panel.Size = new System.Drawing.Size(800, 450);
-            this.panel.TabIndex = 1;
-            this.panel.Paint += new System.Windows.Forms.PaintEventHandler(this.PanelPaint);
-            this.panel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.GameMouseDown);
-            this.panel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.GameMouseMove);
-            this.panel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.GameMouseUp);
             // 
             // menuBar
             // 
@@ -168,21 +155,33 @@
             this.exitButton.Text = "E&xit";
             this.exitButton.Click += new System.EventHandler(this.ExitButtonClick);
             // 
+            // panel
+            // 
+            this.panel.BackColor = System.Drawing.Color.Black;
+            this.panel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel.Location = new System.Drawing.Point(0, 0);
+            this.panel.Name = "panel";
+            this.panel.Size = new System.Drawing.Size(800, 387);
+            this.panel.TabIndex = 1;
+            this.panel.Paint += new System.Windows.Forms.PaintEventHandler(this.PanelPaint);
+            this.panel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.GameMouseDown);
+            this.panel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.GameMouseMove);
+            this.panel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.GameMouseUp);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(800, 387);
             this.Controls.Add(this.panel);
             this.DoubleBuffered = true;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
             this.Menu = this.menuBar;
             this.Name = "Form1";
             this.Text = "Minesweeper";
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.Resize += new System.EventHandler(this.FormResize);
             this.ResumeLayout(false);
 
         }
