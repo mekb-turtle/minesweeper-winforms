@@ -2,6 +2,8 @@
 using Minesweeper.Rendering;
 using System;
 using System.Drawing;
+using System.IO;
+using System.Media;
 using System.Windows.Forms;
 using static Minesweeper.Game.Tile;
 
@@ -247,7 +249,28 @@ namespace Minesweeper {
             Tile tile = GetHoveredTile();
             if (tile == null) return;
 
-            Game.Step(tile.Position);
+            bool started = Game.Started;
+            bool result = Game.Step(tile.Position);
+
+            if (result && soundButton.Checked) {
+                Stream sound = null;
+
+                if (!started) {
+                    // play start sound
+                    sound = Properties.Resources.start;
+                } else if (Game.Win) {
+                    // play win sound
+                    sound = Properties.Resources.win;
+                } else if (Game.Lose) {
+                    // play win sound
+                    sound = Properties.Resources.lose;
+                }
+
+                if (sound != null) {
+                    SoundPlayer soundPlayer = new SoundPlayer(sound);
+                    soundPlayer.Play();
+                }
+            }
 
             gameTimer.Enabled = Game.TimerEnabled;
         }
