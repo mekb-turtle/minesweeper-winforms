@@ -22,6 +22,10 @@ namespace Minesweeper {
             digitSpriteSheet = new SpriteSheet(new Size(13, 23), Properties.Resources.digitColor, Properties.Resources.digitGray);
             tileSpriteSheet = new SpriteSheet(new Size(16, 16), Properties.Resources.tileColor, Properties.Resources.tileGray);
 
+            marksButton.Checked = true;
+            colorButton.Checked = true;
+            soundButton.Checked = false;
+
             UpdateSpriteSheets();
 
             Game = new MinesweeperGame();
@@ -103,8 +107,8 @@ namespace Minesweeper {
 
             // set client size
             Size = new Size(
-                Size.Width - ClientSize.Width + tileBoard.Width + 20,
-                Size.Height - ClientSize.Height + tileBoard.Height + toolBar.Height + 63);
+                Size.Width - ClientSize.Width + tileBoard.Width + 20 + panel.Left,
+                Size.Height - ClientSize.Height + tileBoard.Height + 63 + panel.Top);
 
             panel.Invalidate();
         }
@@ -312,6 +316,10 @@ namespace Minesweeper {
             panel.Invalidate();
         }
 
+        private void ShowBestTimes(object sender, EventArgs e) {
+            throw new NotImplementedException();
+        }
+
         private void StartCustomGame(object sender, EventArgs e) {
             customFieldDialog.Width = Game.Width;
             customFieldDialog.Height = Game.Height;
@@ -350,7 +358,7 @@ namespace Minesweeper {
             soundButton.Checked = !soundButton.Checked;
         }
 
-        private void ExitButton(object sender, EventArgs e) {
+        private void ExitButtonClick(object sender, EventArgs e) {
             Close();
         }
     }
