@@ -170,7 +170,7 @@ namespace Minesweeper {
                     g.FillRectangle(Brushes.Black, flagsDisplay);
                     g.FillRectangle(Brushes.Black, timerDisplay);
                     g.RenderDigits(Game.Flags, 3, digitSpriteSheet, flagsDisplay.Location);
-                    g.RenderDigits(Game.Timer, 3, digitSpriteSheet, timerDisplay.Location);
+                    g.RenderDigits((int) (Game.Timer % 999L), 3, digitSpriteSheet, timerDisplay.Location);
 
                     int faceSprite = 4;
 
@@ -241,10 +241,9 @@ namespace Minesweeper {
             return 0; // unstepped
         }
 
-        private void timerTick(object sender, EventArgs e) {
+        private void timerUpdateTick(object sender, EventArgs e) {
             if (!Game.TimerEnabled) return;
 
-            Game.Timer++;
             panel.Invalidate();
         }
 
@@ -256,8 +255,8 @@ namespace Minesweeper {
             get {
                 Transform transform = getFitMode(gamePanel.Size, ClientSize);
                 return new Point(
-                    (int)((cursorLocation_.X - transform.Rectangle.X) / transform.Scale),
-                    (int)((cursorLocation_.Y - transform.Rectangle.Y) / transform.Scale));
+                    (int) ((cursorLocation_.X - transform.Rectangle.X) / transform.Scale),
+                    (int) ((cursorLocation_.Y - transform.Rectangle.Y) / transform.Scale));
             }
         }
 
@@ -401,18 +400,18 @@ namespace Minesweeper {
             }
         }
 
-        private string getTime(int seconds) {
-            int hours = seconds / 3600;
-            seconds %= 3600;
-            int minutes = seconds / 60;
-            seconds %= 60;
+        private string getTime(long seconds) {
+            long hours = seconds / 3600;
+            int time = (int)(seconds % 3600);
+            long minutes = time / 60;
+            time %= 60;
 
-            string time = "";
-            if (hours > 0) time += hours + "h";
-            if (minutes > 0) time += minutes + "m";
-            time += seconds + "s";
+            string str = "";
+            if (hours > 0) str += hours + "h";
+            if (minutes > 0) str += minutes + "m";
+            str += time + "s";
 
-            return time;
+            return str;
         }
 
         private void FormResize(object sender, EventArgs e) {

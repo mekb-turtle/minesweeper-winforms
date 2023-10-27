@@ -23,7 +23,6 @@ namespace Minesweeper.Game {
         public int Height { get; private set; }
         public int Mines { get; private set; }
         public int Flags { get; private set; }
-        public int Timer { get; set; }
 
         // tiles
         private Tile[,] tiles;
@@ -48,9 +47,6 @@ namespace Minesweeper.Game {
             Lose = false;
             Win = false;
             Started = false;
-
-            // reset timer
-            Timer = 0;
 
             // reset flag count
             Flags = Mines;
@@ -147,6 +143,8 @@ namespace Minesweeper.Game {
                     GetTile(tilePosition).NeighborMines = count;
                 }
 
+            startTime = CurrentTime;
+
             Started = true;
         }
 
@@ -155,17 +153,34 @@ namespace Minesweeper.Game {
 
             if (!Started) {
                 PlaceMines(position);
-
-                Timer++;
             }
 
             if (DoStep(position)) {
                 Win = CheckWin();
 
+                if (!CanMove) finishTime = CurrentTime;
+
                 return true;
             }
 
             return false;
+        }
+
+        private long startTime;
+        private long finishTime;
+
+        private long CurrentTime {
+            get {
+                return DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            }
+        }
+
+        public long Timer {
+            get {
+                if (!Started) return 0;
+                if (!CanMove) return finishTime - startTime;
+                return CurrentTime - startTime;
+            }
         }
 
         private bool CheckWin() {
