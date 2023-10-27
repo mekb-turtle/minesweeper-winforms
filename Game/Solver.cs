@@ -61,6 +61,11 @@ namespace Minesweeper.Game {
         public bool SolveOnce() {
             if (!game.CanMove) return false;
 
+            if (!game.Started) {
+                game.Step(new Position(game.Width / 2, game.Height / 2), true);
+                return true;
+            }
+
             NewBoard();
 
             bool stepped = false;

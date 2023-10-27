@@ -52,7 +52,9 @@
     <Compile Include="CustomFieldDialog.Designer.cs">
       <DependentUpon>CustomFieldDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="DoubleBufferedPanel.cs" />
+	<Compile Include="DoubleBufferedPanel.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>

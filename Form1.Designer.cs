@@ -232,12 +232,14 @@
             // makeOneMoveButton
             // 
             this.makeOneMoveButton.Index = 0;
+            this.makeOneMoveButton.Shortcut = System.Windows.Forms.Shortcut.F7;
             this.makeOneMoveButton.Text = "Make &One Move";
             this.makeOneMoveButton.Click += new System.EventHandler(this.MakeOneMove);
             // 
             // solveButton
             // 
             this.solveButton.Index = 1;
+            this.solveButton.Shortcut = System.Windows.Forms.Shortcut.F8;
             this.solveButton.Text = "&Solve";
             this.solveButton.Click += new System.EventHandler(this.MakeMultipleMoves);
             // 

@@ -43,6 +43,7 @@ namespace Minesweeper {
 
         private void StartNewGame(object sender, EventArgs e) {
             Game.NewGame();
+            panel.Invalidate();
         }
 
         private void UpdateWindowScaleButtons() {
@@ -259,8 +260,6 @@ namespace Minesweeper {
         }
 
         private void TimerUpdateTick(object sender, EventArgs e) {
-            if (!Game.TimerEnabled) return;
-
             panel.Invalidate();
         }
 
@@ -440,10 +439,12 @@ namespace Minesweeper {
 
         private void MakeOneMove(object sender, EventArgs e) {
             Game.Solver.SolveOnce();
+            panel.Invalidate();
         }
 
         private void MakeMultipleMoves(object sender, EventArgs e) {
             Game.Solver.Solve();
+            panel.Invalidate();
         }
 
         private void ToggleFirstMoveClear(object sender, EventArgs e) {
@@ -475,6 +476,7 @@ namespace Minesweeper {
             } else {
                 FormBorderStyle = FormBorderStyle.Sizable;
             }
+            panel.Invalidate();
         }
 
         private string GetTime(long seconds) {
@@ -512,6 +514,7 @@ namespace Minesweeper {
             digitSpriteSheet.SelectedIndex = colorButton.Checked ? 0 : 1;
             faceSpriteSheet.SelectedIndex = colorButton.Checked ? 0 : 1;
             tileSpriteSheet.SelectedIndex = colorButton.Checked ? 0 : 1;
+            panel.Invalidate();
         }
 
         private void ToggleSound(object sender, EventArgs e) {
