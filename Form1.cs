@@ -31,7 +31,11 @@ namespace Minesweeper {
             UpdateSpriteSheets();
 
             Game = new MinesweeperGame();
+
             StartBeginnerGame();
+
+            // twice for when the toolbar overlaps and changes the size
+            ScaleWindow1();
             ScaleWindow1();
         }
 
@@ -87,22 +91,12 @@ namespace Minesweeper {
 
             if (customFieldDialog.ShowDialog() != DialogResult.OK) return;
 
-            int width = InRange(customFieldDialog.Width, 9, 30);
-            int height = InRange(customFieldDialog.Width, 9, 24);
-            int mines = InRange(customFieldDialog.Mines, 10, (width - 1) * (height - 1));
-
-            Game.NewGame(width, height, mines);
+            Game.NewGame(customFieldDialog.Width, customFieldDialog.Height, customFieldDialog.Mines);
 
             UncheckNewGameButtons();
             customButton.Checked = true;
 
             ResizeGame();
-        }
-
-        private int InRange(int number, int min, int max) {
-            if (number < min) return min;
-            if (number > max) return max;
-            return number;
         }
 
         private readonly CustomFieldDialog customFieldDialog = new CustomFieldDialog();
@@ -273,23 +267,13 @@ namespace Minesweeper {
             }
         }
 
-        private bool FaceMouseDown {
-            get {
-                return FormFaceMouseDown && face.Contains(CursorLocation);
-            }
-        }
+        private bool FaceMouseDown => FormFaceMouseDown && face.Contains(CursorLocation);
 
-        private bool TileMouseDown {
-            get {
-                return FormTileMouseDown && tileBoard.Contains(CursorLocation) && Game.CanMove;
-            }
-        }
+        private bool TileMouseDown => FormTileMouseDown && tileBoard.Contains(CursorLocation) && Game.CanMove;
 
-        private Position GetHoveredTilePosition() {
-            return new Position(
+        private Position GetHoveredTilePosition() => new Position(
                 (CursorLocation.X - tileBoard.X) / tileSpriteSheet.GridSize.Width,
                 (CursorLocation.Y - tileBoard.Y) / tileSpriteSheet.GridSize.Height);
-        }
 
         private Tile GetHoveredTile() {
             Position pos = GetHoveredTilePosition();
@@ -307,13 +291,13 @@ namespace Minesweeper {
 
             switch (tile.State) {
                 case TileState.Unstepped:
-                    Game.Flag(tile.Position, TileState.Flag);
+                    Game.Flag(tile, TileState.Flag);
                     break;
                 case TileState.Flag:
-                    Game.Flag(tile.Position, marksButton.Checked ? TileState.Question : TileState.Unstepped);
+                    Game.Flag(tile, marksButton.Checked ? TileState.Question : TileState.Unstepped);
                     break;
                 case TileState.Question:
-                    Game.Flag(tile.Position, TileState.Unstepped);
+                    Game.Flag(tile, TileState.Unstepped);
                     break;
             }
         }
@@ -325,7 +309,21 @@ namespace Minesweeper {
             if (tile == null) return;
 
             bool started = Game.Started;
-            bool result = Game.Step(tile.Position);
+
+            bool result;
+            try {
+                result = Game.Step(tile);
+            } catch (Exception err) {
+                MessageBox.Show(err.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Console.Error.WriteLine(err);
+                return;
+            }
+
+            if (result) {
+                if (autoSolveButton.Checked) {
+                    Game.Solver.Solve();
+                }
+            }
 
             if (result && soundButton.Checked) {
                 Stream sound = null;
@@ -430,6 +428,28 @@ namespace Minesweeper {
             Size = GetWindowSize(4);
         }
 
+        private void MakeOneMove(object sender, EventArgs e) {
+            Game.Solver.SolveOnce();
+        }
+
+        private void MakeMultipleMoves(object sender, EventArgs e) {
+            Game.Solver.Solve();
+        }
+
+        private void ToggleFirstMoveClear(object sender, EventArgs e) {
+            Game.FirstMoveClear = !Game.FirstMoveClear;
+            firstMoveClearButton.Checked = Game.FirstMoveClear;
+        }
+
+        private void ToggleLogic(object sender, EventArgs e) {
+            Game.LogicMode = !Game.LogicMode;
+            logicButton.Checked = Game.LogicMode;
+        }
+
+        private void ToggleAutoSolve(object sender, EventArgs e) {
+            autoSolveButton.Checked = !autoSolveButton.Checked;
+        }
+
         private string GetTime(long seconds) {
             long hours = seconds / 3600;
             int time = (int)(seconds % 3600);
@@ -446,6 +466,7 @@ namespace Minesweeper {
 
         private void FormResize(object sender, EventArgs e) {
             UpdateWindowScaleButtons();
+            MinimumSize = GetWindowSize(1);
             panel.Invalidate();
         }
 

@@ -47,6 +47,13 @@
             this.scale2Button = new System.Windows.Forms.MenuItem();
             this.scale3Button = new System.Windows.Forms.MenuItem();
             this.scale4Button = new System.Windows.Forms.MenuItem();
+            this.solverButton = new System.Windows.Forms.MenuItem();
+            this.makeOneMoveButton = new System.Windows.Forms.MenuItem();
+            this.solveButton = new System.Windows.Forms.MenuItem();
+            this.autoSolveButton = new System.Windows.Forms.MenuItem();
+            this.modesButton = new System.Windows.Forms.MenuItem();
+            this.firstMoveClearButton = new System.Windows.Forms.MenuItem();
+            this.logicButton = new System.Windows.Forms.MenuItem();
             this.panel = new Minesweeper.DoubleBufferedPanel();
             this.SuspendLayout();
             // 
@@ -58,7 +65,9 @@
             // 
             this.menuBar.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.gameButton,
-            this.windowButton});
+            this.windowButton,
+            this.solverButton,
+            this.modesButton});
             // 
             // gameButton
             // 
@@ -194,13 +203,60 @@
             this.scale4Button.Text = "&4x Scale";
             this.scale4Button.Click += new System.EventHandler(this.ScaleWindow4);
             // 
+            // solverButton
+            // 
+            this.solverButton.Index = 2;
+            this.solverButton.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.makeOneMoveButton,
+            this.solveButton,
+            this.autoSolveButton});
+            this.solverButton.Text = "&Solver";
+            // 
+            // makeOneMoveButton
+            // 
+            this.makeOneMoveButton.Index = 0;
+            this.makeOneMoveButton.Text = "Make &One Move";
+            this.makeOneMoveButton.Click += new System.EventHandler(this.MakeOneMove);
+            // 
+            // solveButton
+            // 
+            this.solveButton.Index = 1;
+            this.solveButton.Text = "&Solve";
+            this.solveButton.Click += new System.EventHandler(this.MakeMultipleMoves);
+            // 
+            // autoSolveButton
+            // 
+            this.autoSolveButton.Index = 2;
+            this.autoSolveButton.Text = "&Auto-Solve";
+            this.autoSolveButton.Click += new System.EventHandler(this.ToggleAutoSolve);
+            // 
+            // modesButton
+            // 
+            this.modesButton.Index = 3;
+            this.modesButton.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.firstMoveClearButton,
+            this.logicButton});
+            this.modesButton.Text = "Modes";
+            // 
+            // firstMoveClearButton
+            // 
+            this.firstMoveClearButton.Index = 0;
+            this.firstMoveClearButton.Text = "Blank First Move";
+            this.firstMoveClearButton.Click += new System.EventHandler(this.ToggleFirstMoveClear);
+            // 
+            // logicButton
+            // 
+            this.logicButton.Index = 1;
+            this.logicButton.Text = "Logic / No Guessing";
+            this.logicButton.Click += new System.EventHandler(this.ToggleLogic);
+            // 
             // panel
             // 
             this.panel.BackColor = System.Drawing.Color.Black;
             this.panel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel.Location = new System.Drawing.Point(0, 0);
             this.panel.Name = "panel";
-            this.panel.Size = new System.Drawing.Size(800, 261);
+            this.panel.Size = new System.Drawing.Size(456, 227);
             this.panel.TabIndex = 1;
             this.panel.Paint += new System.Windows.Forms.PaintEventHandler(this.PanelPaint);
             this.panel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.GameMouseDown);
@@ -212,7 +268,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(800, 261);
+            this.ClientSize = new System.Drawing.Size(456, 227);
             this.Controls.Add(this.panel);
             this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -242,13 +298,20 @@
         private System.Windows.Forms.MenuItem soundButton;
         private System.Windows.Forms.MenuItem separator3;
         private System.Windows.Forms.MenuItem saveButton;
-        private System.Windows.Forms.MenuItem separator4;
         private System.Windows.Forms.MenuItem exitButton;
         private System.Windows.Forms.MenuItem windowButton;
         private System.Windows.Forms.MenuItem scale1Button;
         private System.Windows.Forms.MenuItem scale2Button;
         private System.Windows.Forms.MenuItem scale3Button;
         private System.Windows.Forms.MenuItem scale4Button;
+        private System.Windows.Forms.MenuItem solverButton;
+        private System.Windows.Forms.MenuItem firstMoveClearButton;
+        private System.Windows.Forms.MenuItem separator4;
+        private System.Windows.Forms.MenuItem autoSolveButton;
+        private System.Windows.Forms.MenuItem makeOneMoveButton;
+        private System.Windows.Forms.MenuItem solveButton;
+        private System.Windows.Forms.MenuItem modesButton;
+        private System.Windows.Forms.MenuItem logicButton;
     }
 }
 

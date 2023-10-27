@@ -1,4 +1,6 @@
-﻿namespace Minesweeper.Game {
+﻿using System;
+
+namespace Minesweeper.Game {
     public class Tile {
         public enum TileState {
             Unstepped,
@@ -9,6 +11,8 @@
 
         public bool HasMine;
         public TileState State;
+
+        public bool Stepped => State == TileState.Stepped;
 
         public readonly Position Position;
 

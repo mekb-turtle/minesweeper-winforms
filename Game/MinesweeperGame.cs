@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using static Minesweeper.Game.Tile;
+using System.Windows.Forms;
 
 namespace Minesweeper.Game {
     public class MinesweeperGame {
         public MinesweeperGame() {
             NewGame();
+            Solver = new Solver(this);
         }
+
+        readonly public Solver Solver;
 
         readonly static private Position[] neighbors = {
             new Position(-1, -1),
@@ -18,6 +23,10 @@ namespace Minesweeper.Game {
             new Position(0, 1),
             new Position(1, 1)
         };
+
+        public List<Position> GetNeighbors(Tile tile) {
+            return GetNeighbors(tile.Position);
+        }
 
         public List<Position> GetNeighbors(Position position) {
             List<Position> list = new List<Position>();
@@ -37,17 +46,23 @@ namespace Minesweeper.Game {
         // tiles
         private Tile[,] tiles;
 
-        public bool CanMove {
+        public List<Tile> Tiles {
             get {
-                return !Lose && !Win;
+                List<Tile> tileList = new List<Tile>();
+                foreach (Tile tile in tiles) tileList.Add(tile);
+                return tileList;
             }
         }
 
-        public bool TimerEnabled {
-            get {
-                return CanMove && Started;
-            }
-        }
+        // force the first move to have no neighbor mines
+        public bool FirstMoveClear { get; set; } = false;
+
+        // prevent having to guess
+        public bool LogicMode { get; set; } = false;
+
+        public bool CanMove => !Lose && !Win;
+
+        public bool TimerEnabled => CanMove && Started;
 
         public bool Lose { get; private set; }
         public bool Win { get; private set; }
@@ -64,6 +79,10 @@ namespace Minesweeper.Game {
             // reset tiles
             tiles = new Tile[Width, Height];
 
+            ClearBoard();
+        }
+
+        private void ClearBoard() {
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height; y++)
                     tiles[x, y] = new Tile(new Position(x, y));
@@ -71,31 +90,37 @@ namespace Minesweeper.Game {
 
         public bool Started { get; private set; }
 
+        private int InRange(int number, int min, int max) {
+            if (min > max) return min;
+            if (number < min) return min;
+            if (number > max) return max;
+            return number;
+        }
+
         public void NewGame(int width, int height, int mines) {
-            if (width < 1 || height < 1) throw new Exception("Invalid size");
-            if (mines < 1 || mines >= width * height) throw new Exception("Invalid number of mines");
-            Width = width;
-            Height = height;
-            Mines = mines;
+            Width = InRange(width, 9, 60);
+            Height = InRange(height, 9, 32);
+            Mines = InRange(mines, 10, (int)(width * height * 0.45f));
+
             NewGame();
         }
 
         public bool InBounds(Position position) {
-            if (position.x < 0 || position.x >= Width) return false;
-            if (position.y < 0 || position.y >= Height) return false;
+            if (position.X < 0 || position.X >= Width) return false;
+            if (position.Y < 0 || position.Y >= Height) return false;
             return true;
         }
 
         public Tile GetTile(Position position) {
             if (!InBounds(position)) throw new IndexOutOfRangeException("Out of bounds");
-            return tiles[position.x, position.y];
+            return tiles[position.X, position.Y];
         }
 
-        private bool DoStep(Position position) {
+        private bool DoStep(Position position, bool force) {
             Tile tile = GetTile(position);
 
             // flagged or already stepped
-            if (tile.State == TileState.Stepped || tile.State == TileState.Flag) return false;
+            if (tile.Stepped || (!force && tile.State == TileState.Flag)) return false;
 
             // stepped on mine
             if (tile.HasMine) Lose = true;
@@ -112,53 +137,104 @@ namespace Minesweeper.Game {
         }
 
         private void PlaceMines(Position initialPosition) {
+            Started = true;
+
             Random random = new Random(Guid.NewGuid().GetHashCode());
 
-            // set random mines
-            for (int minesLeft = Mines; minesLeft > 0;) {
-                Position minePosition = new Position(random.Next(Width), random.Next(Height));
+            int guessesLeft = 100000 * Mines / (Width * Height);
 
-                // try another tile if the tile is the initial step
-                if (minePosition.Equals(initialPosition))
-                    continue;
+            while (true) {
+                // set random mines
+                for (int minesLeft = Mines; minesLeft > 0;) {
+                    Position minePosition = new Position(random.Next(Width), random.Next(Height));
 
-                // try another tile if the tile already has a mine
-                if (GetTile(minePosition).HasMine)
-                    continue;
+                    // try another tile if the tile is the initial step
+                    if (minePosition.Equals(initialPosition))
+                        continue;
 
-                // put a mine on the tile
-                --minesLeft;
-                GetTile(minePosition).HasMine = true;
-            }
+                    // don't put a mine in a 3x3 area of the initial step
+                    if (FirstMoveClear) {
+                        if (
+                            minePosition.X >= initialPosition.X - 1 &&
+                            minePosition.Y >= initialPosition.Y - 1 &&
+                            minePosition.X <= initialPosition.X + 1 &&
+                            minePosition.Y <= initialPosition.Y + 1) {
+                            continue;
+                        }
+                    }
 
-            // set neighbor mines
-            for (int x = 0; x < Width; x++)
-                for (int y = 0; y < Height; y++) {
-                    Position tilePosition = new Position(x, y);
-                    int count = 0;
+                    // try another tile if the tile already has a mine
+                    if (GetTile(minePosition).HasMine)
+                        continue;
 
-                    GetNeighbors(tilePosition).ForEach(neighborPosition => {
-                        // increment count if neighbor is in bounds and has a mine on the tile
-                        if (InBounds(neighborPosition))
-                            if (GetTile(neighborPosition).HasMine) count++;
-                    });
-
-                    GetTile(tilePosition).NeighborMines = count;
+                    // put a mine on the tile
+                    --minesLeft;
+                    GetTile(minePosition).HasMine = true;
                 }
+
+                // set neighbor mines
+                for (int x = 0; x < Width; x++)
+                    for (int y = 0; y < Height; y++) {
+                        Position tilePosition = new Position(x, y);
+
+                        // count how many neighbors have a mine
+                        GetTile(tilePosition).NeighborMines = GetNeighbors(tilePosition).Count(neighborPosition => GetTile(neighborPosition).HasMine);
+                    }
+
+                if (LogicMode) {
+                    // determine if the game is solvable without guessing
+                    Step(initialPosition, true);
+                    Solver.Solve();
+
+                    // reset flag count
+                    Flags = Mines;
+
+                    // guesses are required if the solver did not win the game, so generate a new board and try again
+                    if (!Win) {
+                        ClearBoard();
+                        guessesLeft--;
+
+                        if (guessesLeft <= 0) {
+                            // give up
+                            NewGame();
+                            throw new Exception("Failed to find game without guesses");
+                        }
+
+                        continue;
+                    }
+
+                    // otherwise, the board is solvable without guessing
+
+                    // reset win state
+                    Win = false;
+
+                    // clear the tiles
+                    for (int x = 0; x < Width; x++)
+                        for (int y = 0; y < Height; y++) {
+                            tiles[x, y].State = TileState.Unstepped;
+                        }
+
+                    break;
+                } else break;
+            }
 
             startTime = CurrentTime;
 
-            Started = true;
+            return;
         }
 
-        public bool Step(Position position) {
+        public bool Step(Tile tile, bool force = false) {
+            return Step(tile.Position, force);
+        }
+
+        public bool Step(Position position, bool force = false) {
             if (!CanMove) return false;
 
             if (!Started) {
                 PlaceMines(position);
             }
 
-            if (DoStep(position)) {
+            if (DoStep(position, force)) {
                 Win = CheckWin();
 
                 if (!CanMove) finishTime = CurrentTime;
@@ -192,24 +268,28 @@ namespace Minesweeper.Game {
                     Tile tile = GetTile(new Position(x, y));
 
                     // stepped on mine
-                    if (tile.HasMine && tile.State == TileState.Stepped) return false;
+                    if (tile.HasMine && tile.Stepped) return false;
 
                     // hasn't stepped on safe tile
-                    if (!tile.HasMine && tile.State != TileState.Stepped) return false;
+                    if (!tile.HasMine && !tile.Stepped) return false;
                 }
 
             return true;
         }
 
-        public bool Flag(Position position, Tile.TileState flag) {
+        public bool Flag(Tile tile, TileState flag) {
+            return Flag(tile.Position, flag);
+        }
+
+        public bool Flag(Position position, TileState flag) {
             if (flag == TileState.Stepped) throw new Exception("Invalid flag");
 
-            if (!CanMove) return false;
+            if (!CanMove || !Started) return false;
 
             Tile tile = GetTile(position);
 
             // already stepped
-            if (tile.State == TileState.Stepped) return false;
+            if (tile.Stepped) return false;
 
             // nothing changed
             if (flag == tile.State) return false;

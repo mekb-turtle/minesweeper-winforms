@@ -1,19 +1,19 @@
 ﻿namespace Minesweeper.Game {
     public class Position {
-        public int x;
-        public int y;
+        public int X;
+        public int Y;
 
-        public Position(int x, int y) {
-            this.x = x;
-            this.y = y;
+        public Position(int X, int Y) {
+            this.X = X;
+            this.Y = Y;
         }
 
         public static Position operator +(Position a, Position b) {
-            return new Position(a.x + b.x, a.y + b.y);
+            return new Position(a.X + b.X, a.Y + b.Y);
         }
 
         public static Position operator -(Position a, Position b) {
-            return new Position(a.x - b.x, a.y - b.y);
+            return new Position(a.X - b.X, a.Y - b.Y);
         }
 
         public override bool Equals(object obj) {
@@ -21,14 +21,18 @@
         }
 
         public bool Equals(Position position) {
-            return x == position.x && y == position.y;
+            return X == position.X && Y == position.Y;
         }
 
         public override int GetHashCode() {
             int hashCode = 1502939027;
-            hashCode = hashCode * -1521134295 + x.GetHashCode();
-            hashCode = hashCode * -1521134295 + y.GetHashCode();
+            hashCode = hashCode * -1521134295 + X.GetHashCode();
+            hashCode = hashCode * -1521134295 + Y.GetHashCode();
             return hashCode;
+        }
+
+        public override string ToString() {
+            return "X: " + X + ", Y: " + Y;
         }
     }
 }
