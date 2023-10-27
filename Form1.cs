@@ -97,7 +97,7 @@ namespace Minesweeper {
             return number;
         }
 
-        private CustomFieldDialog customFieldDialog = new CustomFieldDialog();
+        private readonly CustomFieldDialog customFieldDialog = new CustomFieldDialog();
 
         private void ResizeGame() {
             // set info panel rect
@@ -147,7 +147,7 @@ namespace Minesweeper {
         private void PanelPaint(object sender, PaintEventArgs e) {
             e.Graphics.Clear(panel.BackColor);
 
-            Transform transform = getFitMode(gamePanel.Size, ClientSize);
+            Transform transform = GetFitMode(gamePanel.Size, ClientSize);
 
             using (Bitmap bitmap = new Bitmap(gamePanel.Width, gamePanel.Height)) {
                 using (Graphics g = Graphics.FromImage(bitmap)) {
@@ -176,11 +176,11 @@ namespace Minesweeper {
 
                     if (Game.Win) faceSprite = 1;
                     if (Game.Lose) faceSprite = 2;
-                    if (tileMouseDown) faceSprite = 3;
-                    if (faceMouseDown) faceSprite = 0;
+                    if (TileMouseDown) faceSprite = 3;
+                    if (FaceMouseDown) faceSprite = 0;
 
                     // draw face
-                    g.DrawImage(faceSpriteSheet.getSprite(0, faceSprite), face);
+                    g.DrawImage(faceSpriteSheet.GetSprite(0, faceSprite), face);
 
                     // draw board
                     for (int x = 0; x < Game.Width; x++) {
@@ -188,7 +188,7 @@ namespace Minesweeper {
                             Tile tile = Game.GetTile(new Position(x, y));
 
                             g.DrawImage(
-                                tileSpriteSheet.getSprite(0, GetTileSprite(tile)),
+                                tileSpriteSheet.GetSprite(0, GetTileSprite(tile)),
                                 new PointF(
                                     x * tileSpriteSheet.GridSize.Width + tileBoard.X,
                                     y * tileSpriteSheet.GridSize.Height + tileBoard.Y));
@@ -220,7 +220,7 @@ namespace Minesweeper {
                         if (!tile.HasMine) return 4; // mine with cross on it
                         break;
                 }
-            } else if (tileMouseDown && GetHoveredTilePosition().Equals(tile.Position)) {
+            } else if (TileMouseDown && GetHoveredTilePosition().Equals(tile.Position)) {
                 switch (tile.State) {
                     case TileState.Unstepped:
                         return 15; // stepped (0)
@@ -241,41 +241,41 @@ namespace Minesweeper {
             return 0; // unstepped
         }
 
-        private void timerUpdateTick(object sender, EventArgs e) {
+        private void TimerUpdateTick(object sender, EventArgs e) {
             if (!Game.TimerEnabled) return;
 
             panel.Invalidate();
         }
 
-        private bool faceMouseDown_ = false;
-        private bool tileMouseDown_ = false;
-        private Point cursorLocation_ = new Point();
+        private bool FormFaceMouseDown = false;
+        private bool FormTileMouseDown = false;
+        private Point FormCursorLocation = new Point();
 
-        private Point cursorLocation {
+        private Point CursorLocation {
             get {
-                Transform transform = getFitMode(gamePanel.Size, ClientSize);
+                Transform transform = GetFitMode(gamePanel.Size, ClientSize);
                 return new Point(
-                    (int) ((cursorLocation_.X - transform.Rectangle.X) / transform.Scale),
-                    (int) ((cursorLocation_.Y - transform.Rectangle.Y) / transform.Scale));
+                    (int) ((FormCursorLocation.X - transform.Rectangle.X) / transform.Scale),
+                    (int) ((FormCursorLocation.Y - transform.Rectangle.Y) / transform.Scale));
             }
         }
 
-        private bool faceMouseDown {
+        private bool FaceMouseDown {
             get {
-                return faceMouseDown_ && face.Contains(cursorLocation);
+                return FormFaceMouseDown && face.Contains(CursorLocation);
             }
         }
 
-        private bool tileMouseDown {
+        private bool TileMouseDown {
             get {
-                return tileMouseDown_ && tileBoard.Contains(cursorLocation) && Game.CanMove;
+                return FormTileMouseDown && tileBoard.Contains(CursorLocation) && Game.CanMove;
             }
         }
 
         private Position GetHoveredTilePosition() {
             return new Position(
-                (cursorLocation.X - tileBoard.X) / tileSpriteSheet.GridSize.Width,
-                (cursorLocation.Y - tileBoard.Y) / tileSpriteSheet.GridSize.Height);
+                (CursorLocation.X - tileBoard.X) / tileSpriteSheet.GridSize.Width,
+                (CursorLocation.Y - tileBoard.Y) / tileSpriteSheet.GridSize.Height);
         }
 
         private Tile GetHoveredTile() {
@@ -338,13 +338,13 @@ namespace Minesweeper {
         }
 
         private void GameMouseDown(object sender, MouseEventArgs e) {
-            cursorLocation_ = e.Location;
+            FormCursorLocation = e.Location;
 
             if (e.Button == MouseButtons.Left) {
-                if (face.Contains(cursorLocation))
-                    faceMouseDown_ = true;
-                else if (tileBoard.Contains(cursorLocation) && Game.CanMove)
-                    tileMouseDown_ = true;
+                if (face.Contains(CursorLocation))
+                    FormFaceMouseDown = true;
+                else if (tileBoard.Contains(CursorLocation) && Game.CanMove)
+                    FormTileMouseDown = true;
             } else if (e.Button == MouseButtons.Right && Game.CanMove) {
                 FlagTile();
             }
@@ -353,23 +353,23 @@ namespace Minesweeper {
         }
 
         private void GameMouseUp(object sender, MouseEventArgs e) {
-            cursorLocation_ = e.Location;
+            FormCursorLocation = e.Location;
 
             if (e.Button == MouseButtons.Left) {
-                if (faceMouseDown)
+                if (FaceMouseDown)
                     Game.NewGame();
-                else if (tileMouseDown)
+                else if (TileMouseDown)
                     StepTile();
 
-                faceMouseDown_ = false;
-                tileMouseDown_ = false;
+                FormFaceMouseDown = false;
+                FormTileMouseDown = false;
             }
 
             panel.Invalidate();
         }
 
         private void GameMouseMove(object sender, MouseEventArgs e) {
-            cursorLocation_ = e.Location;
+            FormCursorLocation = e.Location;
 
             panel.Invalidate();
         }
@@ -386,21 +386,22 @@ namespace Minesweeper {
             Clipboard.SetImage(image);
 
             string filename = "minesweeper";
-            if (Game.Win) filename += "_" + getTime(Game.Timer);
+            if (Game.Win) filename += "_" + GetTime(Game.Timer);
             filename += ".png";
 
             // open save dialog
-            SaveFileDialog dialog = new SaveFileDialog();
-            dialog.AddExtension = true;
-            dialog.Filter = "PNG Image|*.png|All Files|*";
-            dialog.Title = "Save Screenshot";
-            dialog.FileName = filename;
+            SaveFileDialog dialog = new SaveFileDialog {
+                AddExtension = true,
+                Filter = "PNG Image|*.png|All Files|*",
+                Title = "Save Screenshot",
+                FileName = filename
+            };
             if (dialog.ShowDialog() == DialogResult.OK) {
                 image.Save(dialog.FileName, System.Drawing.Imaging.ImageFormat.Png);
             }
         }
 
-        private string getTime(long seconds) {
+        private string GetTime(long seconds) {
             long hours = seconds / 3600;
             int time = (int)(seconds % 3600);
             long minutes = time / 60;

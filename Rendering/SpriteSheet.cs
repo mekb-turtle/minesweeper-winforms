@@ -42,7 +42,7 @@ namespace Minesweeper.Rendering {
         public SpriteSheet(Size gridSize, params Bitmap[] spriteSheets) : this(gridSize, spriteSheets.ToList()) {
         }
 
-        public Bitmap getSprite(int x, int y) {
+        public Bitmap GetSprite(int x, int y) {
             Rectangle spriteRect = new Rectangle(
                 x * gridSize.Width, y * gridSize.Height,
                 gridSize.Width, gridSize.Height);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using static Minesweeper.Game.Tile;
 
 namespace Minesweeper.Game {
@@ -17,6 +18,15 @@ namespace Minesweeper.Game {
             new Position(0, 1),
             new Position(1, 1)
         };
+
+        public List<Position> GetNeighbors(Position position) {
+            List<Position> list = new List<Position>();
+            foreach (Position offset in neighbors) {
+                Position neighbor = position + offset;
+                if (InBounds(neighbor)) list.Add(neighbor);
+            }
+            return list;
+        }
 
         // size
         public int Width { get; private set; }
@@ -95,12 +105,7 @@ namespace Minesweeper.Game {
 
             if (tile.NeighborMines == 0) {
                 // floodfill
-                foreach (Position offset in neighbors) {
-                    Position neighborPosition = position + offset;
-                    if (InBounds(neighborPosition)) {
-                        Step(neighborPosition);
-                    }
-                }
+                GetNeighbors(position).ForEach(pos => Step(pos));
             }
 
             return true;
@@ -132,13 +137,11 @@ namespace Minesweeper.Game {
                     Position tilePosition = new Position(x, y);
                     int count = 0;
 
-                    foreach (Position offset in neighbors) {
-                        Position neighborPosition = tilePosition + offset;
-
+                    GetNeighbors(tilePosition).ForEach(neighborPosition => {
                         // increment count if neighbor is in bounds and has a mine on the tile
                         if (InBounds(neighborPosition))
                             if (GetTile(neighborPosition).HasMine) count++;
-                    }
+                    });
 
                     GetTile(tilePosition).NeighborMines = count;
                 }

@@ -62,6 +62,7 @@
     <Compile Include="Game\MinesweeperGame.cs" />
     <Compile Include="Game\Position.cs" />
     <Compile Include="Game\Tile.cs" />
+    <Compile Include="Game\Tile.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -75,7 +75,7 @@ namespace Minesweeper.Rendering {
                     sprite = 11 - (digit - '0');
                 else if (digit == '-') sprite = 0;
 
-                graphics.DrawImage(spriteSheet.getSprite(0, sprite), new RectangleF(
+                graphics.DrawImage(spriteSheet.GetSprite(0, sprite), new RectangleF(
                     i * spriteSheet.GridSize.Width + offset.X, offset.Y,
                     spriteSheet.GridSize.Width, spriteSheet.GridSize.Height));
             }
@@ -96,7 +96,7 @@ namespace Minesweeper.Rendering {
             }
         }
 
-        public static Transform getFitMode(SizeF imageSize, SizeF windowSize) {
+        public static Transform GetFitMode(SizeF imageSize, SizeF windowSize) {
             float scale;
 
             if (imageSize.Width == 0 || imageSize.Height == 0 || windowSize.Width == 0 || windowSize.Height == 0) return new Transform(0, 0, 0, 0, 0);

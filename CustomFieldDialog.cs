@@ -32,8 +32,7 @@ namespace Minesweeper {
         }
 
         private int ToInt(string str) {
-            int i;
-            if (int.TryParse(RemoveNonNumbers(str), out i)) {
+            if (int.TryParse(RemoveNonNumbers(str), out int i)) {
                 return i;
             }
             return 1;
@@ -59,12 +58,12 @@ namespace Minesweeper {
             InitializeComponent();
         }
 
-        private void okButton_Click(object sender, EventArgs e) {
+        private void ClickOKButton(object sender, EventArgs e) {
             DialogResult = DialogResult.OK;
             Close();
         }
 
-        private void cancelButton_Click(object sender, EventArgs e) {
+        private void ClickCancelButton(object sender, EventArgs e) {
             DialogResult = DialogResult.Cancel;
             Close();
         }
