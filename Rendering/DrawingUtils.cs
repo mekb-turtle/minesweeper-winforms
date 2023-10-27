@@ -114,12 +114,31 @@ namespace Minesweeper.Rendering {
             }
         }
 
+        private static int RoundDown(float x, int m) {
+            return (int)(x - (x % m));
+        }
+
+        private static int RoundNearest(float x, int m) {
+            return RoundDown((int)(x + (m * 0.5f)), m);
+        }
+
         public static void DrawSharpUpscaledImage(this Graphics graphics, Image image, RectangleF rectangle) {
-            using (Bitmap bitmap = new Bitmap((int)Math.Floor(rectangle.Width), (int)Math.Floor(rectangle.Height))) {
+            Size size = new Size(RoundNearest(rectangle.Width, image.Width), RoundNearest(rectangle.Height, image.Height));
+
+            if (size.Width == 0 || size.Height == 0) {
+                // not possible to round down
+                graphics.DrawImage(image, rectangle);
+                return;
+            }
+
+            // round down to nearest multiple of image size
+            using (Bitmap bitmap = new Bitmap(size.Width, size.Height)) {
                 using (Graphics g = Graphics.FromImage(bitmap)) {
                     g.InterpolationMode = InterpolationMode.NearestNeighbor;
                     g.DrawImage(image, 0, 0, bitmap.Width, bitmap.Height);
                 }
+
+                // then scale up to fill remainder of size
                 graphics.DrawImage(bitmap, rectangle);
             }
         }

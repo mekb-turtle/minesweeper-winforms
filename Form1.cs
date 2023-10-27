@@ -31,11 +31,19 @@ namespace Minesweeper {
             UpdateSpriteSheets();
 
             Game = new MinesweeperGame();
-            StartBeginnerGame(null, null);
+            StartBeginnerGame();
+            ScaleWindow1();
         }
 
         private void StartNewGame(object sender, EventArgs e) {
             Game.NewGame();
+        }
+
+        private void UpdateWindowScaleButtons() {
+            scale1Button.Checked = Size.Equals(GetWindowSize(1));
+            scale2Button.Checked = Size.Equals(GetWindowSize(2));
+            scale3Button.Checked = Size.Equals(GetWindowSize(3));
+            scale4Button.Checked = Size.Equals(GetWindowSize(4));
         }
 
         private void UncheckNewGameButtons() {
@@ -45,7 +53,7 @@ namespace Minesweeper {
             customButton.Checked = false;
         }
 
-        private void StartBeginnerGame(object sender, EventArgs e) {
+        private void StartBeginnerGame(object sender = null, EventArgs e = null) {
             Game.NewGame(9, 9, 10);
 
             UncheckNewGameButtons();
@@ -54,7 +62,7 @@ namespace Minesweeper {
             ResizeGame();
         }
 
-        private void StartIntermediateGame(object sender, EventArgs e) {
+        private void StartIntermediateGame(object sender = null, EventArgs e = null) {
             Game.NewGame(16, 16, 40);
 
             UncheckNewGameButtons();
@@ -63,7 +71,7 @@ namespace Minesweeper {
             ResizeGame();
         }
 
-        private void StartExpertGame(object sender, EventArgs e) {
+        private void StartExpertGame(object sender = null, EventArgs e = null) {
             Game.NewGame(30, 16, 99);
 
             UncheckNewGameButtons();
@@ -72,7 +80,7 @@ namespace Minesweeper {
             ResizeGame();
         }
 
-        private void StartCustomGame(object sender, EventArgs e) {
+        private void StartCustomGame(object sender = null, EventArgs e = null) {
             customFieldDialog.Width = Game.Width;
             customFieldDialog.Height = Game.Height;
             customFieldDialog.Mines = Game.Mines;
@@ -131,9 +139,13 @@ namespace Minesweeper {
             gamePanel.Height = tileBoard.Height + 63;
 
             // set minimum window size
-            MinimumSize = new Size(Width - panel.Width + gamePanel.Width, Height - panel.Height + gamePanel.Height);
+            MinimumSize = GetWindowSize(1);
 
             panel.Invalidate();
+        }
+
+        private Size GetWindowSize(float scale) {
+            return new Size((int)(Width - panel.Width + (scale * gamePanel.Width)), (int)(Height - panel.Height + (scale * gamePanel.Height)));
         }
 
         private Rectangle
@@ -170,7 +182,7 @@ namespace Minesweeper {
                     g.FillRectangle(Brushes.Black, flagsDisplay);
                     g.FillRectangle(Brushes.Black, timerDisplay);
                     g.RenderDigits(Game.Flags, 3, digitSpriteSheet, flagsDisplay.Location);
-                    g.RenderDigits((int) (Game.Timer % 999L), 3, digitSpriteSheet, timerDisplay.Location);
+                    g.RenderDigits((int)(Game.Timer % 999L), 3, digitSpriteSheet, timerDisplay.Location);
 
                     int faceSprite = 4;
 
@@ -196,6 +208,7 @@ namespace Minesweeper {
                     }
                 }
 
+                e.Graphics.InterpolationMode = InterpolationMode.HighQualityBilinear;
                 e.Graphics.DrawSharpUpscaledImage(bitmap, transform.Rectangle);
 
                 if (Screenshot) {
@@ -255,8 +268,8 @@ namespace Minesweeper {
             get {
                 Transform transform = GetFitMode(gamePanel.Size, ClientSize);
                 return new Point(
-                    (int) ((FormCursorLocation.X - transform.Rectangle.X) / transform.Scale),
-                    (int) ((FormCursorLocation.Y - transform.Rectangle.Y) / transform.Scale));
+                    (int)((FormCursorLocation.X - transform.Rectangle.X) / transform.Scale),
+                    (int)((FormCursorLocation.Y - transform.Rectangle.Y) / transform.Scale));
             }
         }
 
@@ -401,6 +414,22 @@ namespace Minesweeper {
             }
         }
 
+        private void ScaleWindow1(object sender = null, EventArgs e = null) {
+            Size = GetWindowSize(1);
+        }
+
+        private void ScaleWindow2(object sender = null, EventArgs e = null) {
+            Size = GetWindowSize(2);
+        }
+
+        private void ScaleWindow3(object sender = null, EventArgs e = null) {
+            Size = GetWindowSize(3);
+        }
+
+        private void ScaleWindow4(object sender = null, EventArgs e = null) {
+            Size = GetWindowSize(4);
+        }
+
         private string GetTime(long seconds) {
             long hours = seconds / 3600;
             int time = (int)(seconds % 3600);
@@ -416,6 +445,7 @@ namespace Minesweeper {
         }
 
         private void FormResize(object sender, EventArgs e) {
+            UpdateWindowScaleButtons();
             panel.Invalidate();
         }
 

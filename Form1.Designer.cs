@@ -42,6 +42,11 @@
             this.saveButton = new System.Windows.Forms.MenuItem();
             this.separator4 = new System.Windows.Forms.MenuItem();
             this.exitButton = new System.Windows.Forms.MenuItem();
+            this.windowButton = new System.Windows.Forms.MenuItem();
+            this.scale1Button = new System.Windows.Forms.MenuItem();
+            this.scale2Button = new System.Windows.Forms.MenuItem();
+            this.scale3Button = new System.Windows.Forms.MenuItem();
+            this.scale4Button = new System.Windows.Forms.MenuItem();
             this.panel = new Minesweeper.DoubleBufferedPanel();
             this.SuspendLayout();
             // 
@@ -52,7 +57,8 @@
             // menuBar
             // 
             this.menuBar.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.gameButton});
+            this.gameButton,
+            this.windowButton});
             // 
             // gameButton
             // 
@@ -154,13 +160,47 @@
             this.exitButton.Text = "E&xit";
             this.exitButton.Click += new System.EventHandler(this.ExitButtonClick);
             // 
+            // windowButton
+            // 
+            this.windowButton.Index = 1;
+            this.windowButton.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.scale1Button,
+            this.scale2Button,
+            this.scale3Button,
+            this.scale4Button});
+            this.windowButton.Text = "&Window";
+            // 
+            // scale1Button
+            // 
+            this.scale1Button.Index = 0;
+            this.scale1Button.Text = "&1x Scale";
+            this.scale1Button.Click += new System.EventHandler(this.ScaleWindow1);
+            // 
+            // scale2Button
+            // 
+            this.scale2Button.Index = 1;
+            this.scale2Button.Text = "&2x Scale";
+            this.scale2Button.Click += new System.EventHandler(this.ScaleWindow2);
+            // 
+            // scale3Button
+            // 
+            this.scale3Button.Index = 2;
+            this.scale3Button.Text = "&3x Scale";
+            this.scale3Button.Click += new System.EventHandler(this.ScaleWindow3);
+            // 
+            // scale4Button
+            // 
+            this.scale4Button.Index = 3;
+            this.scale4Button.Text = "&4x Scale";
+            this.scale4Button.Click += new System.EventHandler(this.ScaleWindow4);
+            // 
             // panel
             // 
             this.panel.BackColor = System.Drawing.Color.Black;
             this.panel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel.Location = new System.Drawing.Point(0, 0);
             this.panel.Name = "panel";
-            this.panel.Size = new System.Drawing.Size(800, 387);
+            this.panel.Size = new System.Drawing.Size(800, 261);
             this.panel.TabIndex = 1;
             this.panel.Paint += new System.Windows.Forms.PaintEventHandler(this.PanelPaint);
             this.panel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.GameMouseDown);
@@ -172,7 +212,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(800, 387);
+            this.ClientSize = new System.Drawing.Size(800, 261);
             this.Controls.Add(this.panel);
             this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -204,6 +244,11 @@
         private System.Windows.Forms.MenuItem saveButton;
         private System.Windows.Forms.MenuItem separator4;
         private System.Windows.Forms.MenuItem exitButton;
+        private System.Windows.Forms.MenuItem windowButton;
+        private System.Windows.Forms.MenuItem scale1Button;
+        private System.Windows.Forms.MenuItem scale2Button;
+        private System.Windows.Forms.MenuItem scale3Button;
+        private System.Windows.Forms.MenuItem scale4Button;
     }
 }
 
