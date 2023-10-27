@@ -37,6 +37,8 @@ namespace Minesweeper {
             // twice for when the toolbar overlaps and changes the size
             ScaleWindow1();
             ScaleWindow1();
+
+            UpdateFullscreen();
         }
 
         private void StartNewGame(object sender, EventArgs e) {
@@ -150,67 +152,75 @@ namespace Minesweeper {
             timerDisplay = new Rectangle(),
             face = new Rectangle();
 
+        private void RenderGame(Graphics g) {
+            g.InterpolationMode = InterpolationMode.NearestNeighbor;
+
+            // background
+            g.FillRectangle(Brushes.Silver, gamePanel);
+
+            // borders
+            g.FillRectangle(Brushes.White, 0, 0, gamePanel.Width, 3);
+            g.FillRectangle(Brushes.White, 0, 0, 3, gamePanel.Height);
+            g.DrawBorder(infoPanel, 2);
+            g.DrawBorderOutside(tileBoard, 3);
+            g.DrawBorderOutside(flagsDisplay, 1);
+            g.DrawBorderOutside(timerDisplay, 1);
+            g.FillRectangle(Brushes.Gray, face);
+            g.DrawBorderOutside(face, 1, Brushes.Gray, Brushes.Gray);
+
+            // draw flags and timer
+            g.FillRectangle(Brushes.Black, flagsDisplay);
+            g.FillRectangle(Brushes.Black, timerDisplay);
+            g.RenderDigits(Game.Flags, 3, digitSpriteSheet, flagsDisplay.Location);
+            g.RenderDigits((int)(Game.Timer % 999L), 3, digitSpriteSheet, timerDisplay.Location);
+
+            int faceSprite = 4;
+
+            if (Game.Win) faceSprite = 1;
+            if (Game.Lose) faceSprite = 2;
+            if (TileMouseDown) faceSprite = 3;
+            if (FaceMouseDown) faceSprite = 0;
+
+            // draw face
+            g.DrawImage(faceSpriteSheet.GetSprite(0, faceSprite), face);
+
+            // draw board
+            for (int x = 0; x < Game.Width; x++) {
+                for (int y = 0; y < Game.Height; y++) {
+                    Tile tile = Game.GetTile(new Position(x, y));
+
+                    g.DrawImage(
+                        tileSpriteSheet.GetSprite(0, GetTileSprite(tile)),
+                        new PointF(
+                            x * tileSpriteSheet.GridSize.Width + tileBoard.X,
+                            y * tileSpriteSheet.GridSize.Height + tileBoard.Y));
+                }
+            }
+        }
+
+        private Bitmap panelImage = null;
+
         private void PanelPaint(object sender, PaintEventArgs e) {
             e.Graphics.Clear(panel.BackColor);
 
-            Transform transform = GetFitMode(gamePanel.Size, ClientSize);
+            Transform transform = GetFitMode(gamePanel.Size, panel.Size);
 
-            using (Bitmap bitmap = new Bitmap(gamePanel.Width, gamePanel.Height)) {
-                using (Graphics g = Graphics.FromImage(bitmap)) {
-                    g.InterpolationMode = InterpolationMode.NearestNeighbor;
-
-                    // background
-                    g.Clear(Color.Silver);
-
-                    // borders
-                    g.FillRectangle(Brushes.White, 0, 0, gamePanel.Width, 3);
-                    g.FillRectangle(Brushes.White, 0, 0, 3, gamePanel.Height);
-                    g.DrawBorder(infoPanel, 2);
-                    g.DrawBorderOutside(tileBoard, 3);
-                    g.DrawBorderOutside(flagsDisplay, 1);
-                    g.DrawBorderOutside(timerDisplay, 1);
-                    g.FillRectangle(Brushes.Gray, face);
-                    g.DrawBorderOutside(face, 1, Brushes.Gray, Brushes.Gray);
-
-                    // draw flags and timer
-                    g.FillRectangle(Brushes.Black, flagsDisplay);
-                    g.FillRectangle(Brushes.Black, timerDisplay);
-                    g.RenderDigits(Game.Flags, 3, digitSpriteSheet, flagsDisplay.Location);
-                    g.RenderDigits((int)(Game.Timer % 999L), 3, digitSpriteSheet, timerDisplay.Location);
-
-                    int faceSprite = 4;
-
-                    if (Game.Win) faceSprite = 1;
-                    if (Game.Lose) faceSprite = 2;
-                    if (TileMouseDown) faceSprite = 3;
-                    if (FaceMouseDown) faceSprite = 0;
-
-                    // draw face
-                    g.DrawImage(faceSpriteSheet.GetSprite(0, faceSprite), face);
-
-                    // draw board
-                    for (int x = 0; x < Game.Width; x++) {
-                        for (int y = 0; y < Game.Height; y++) {
-                            Tile tile = Game.GetTile(new Position(x, y));
-
-                            g.DrawImage(
-                                tileSpriteSheet.GetSprite(0, GetTileSprite(tile)),
-                                new PointF(
-                                    x * tileSpriteSheet.GridSize.Width + tileBoard.X,
-                                    y * tileSpriteSheet.GridSize.Height + tileBoard.Y));
-                        }
-                    }
-                }
-
-                e.Graphics.InterpolationMode = InterpolationMode.HighQualityBilinear;
-                e.Graphics.DrawSharpUpscaledImage(bitmap, transform.Rectangle);
-
-                if (Screenshot) {
-                    Screenshot = false;
-
-                    SaveImage(bitmap);
-                }
+            if (panelImage != null && !panelImage.Size.Equals(gamePanel.Size)) {
+                panelImage.Dispose();
+                panelImage = null;
             }
+
+            if (panelImage == null) {
+                panelImage = new Bitmap(gamePanel.Width, gamePanel.Height);
+            }
+
+            using (Graphics g = Graphics.FromImage(panelImage)) {
+                g.Clear(Color.Transparent);
+                RenderGame(g);
+            }
+
+            e.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
+            e.Graphics.DrawImage(panelImage, transform.Rectangle);
         }
 
         private int GetTileSprite(Tile tile) {
@@ -385,30 +395,30 @@ namespace Minesweeper {
             panel.Invalidate();
         }
 
-        private bool Screenshot = false;
-
         private void SaveImage(object sender, EventArgs e) {
-            Screenshot = true;
-            panel.Invalidate();
-        }
+            using (Bitmap image = new Bitmap(gamePanel.Width, gamePanel.Height)) {
+                using (Graphics g = Graphics.FromImage(image)) {
+                    RenderGame(g);
+                }
 
-        private void SaveImage(Image image) {
-            // copy to clipboard
-            Clipboard.SetImage(image);
+                // copy to clipboard
+                Clipboard.SetImage(image);
 
-            string filename = "minesweeper";
-            if (Game.Win) filename += "_" + GetTime(Game.Timer);
-            filename += ".png";
+                string filename = "minesweeper";
+                if (Game.Win) filename += "_" + GetTime(Game.Timer);
+                filename += ".png";
 
-            // open save dialog
-            SaveFileDialog dialog = new SaveFileDialog {
-                AddExtension = true,
-                Filter = "PNG Image|*.png|All Files|*",
-                Title = "Save Screenshot",
-                FileName = filename
-            };
-            if (dialog.ShowDialog() == DialogResult.OK) {
-                image.Save(dialog.FileName, System.Drawing.Imaging.ImageFormat.Png);
+                // open save dialog
+                using (SaveFileDialog dialog = new SaveFileDialog {
+                    AddExtension = true,
+                    Filter = "PNG Image|*.png|All Files|*",
+                    Title = "Save Screenshot",
+                    FileName = filename
+                }) {
+                    if (dialog.ShowDialog() == DialogResult.OK) {
+                        image.Save(dialog.FileName, System.Drawing.Imaging.ImageFormat.Png);
+                    }
+                }
             }
         }
 
@@ -450,6 +460,23 @@ namespace Minesweeper {
             autoSolveButton.Checked = !autoSolveButton.Checked;
         }
 
+        private bool Fullscreen = false;
+
+        private void ToggleFullscreen(object sender, EventArgs e) {
+            Fullscreen = !Fullscreen;
+            UpdateFullscreen();
+        }
+
+        private void UpdateFullscreen() {
+            fullscreenButton.Checked = Fullscreen;
+            if (Fullscreen) {
+                WindowState = FormWindowState.Maximized;
+                FormBorderStyle = FormBorderStyle.None;
+            } else {
+                FormBorderStyle = FormBorderStyle.Sizable;
+            }
+        }
+
         private string GetTime(long seconds) {
             long hours = seconds / 3600;
             int time = (int)(seconds % 3600);
@@ -464,7 +491,9 @@ namespace Minesweeper {
             return str;
         }
 
-        private void FormResize(object sender, EventArgs e) {
+        private void FormSizeChanged(object sender, EventArgs e) {
+            if (WindowState != FormWindowState.Maximized) Fullscreen = false;
+            UpdateFullscreen();
             UpdateWindowScaleButtons();
             MinimumSize = GetWindowSize(1);
             panel.Invalidate();

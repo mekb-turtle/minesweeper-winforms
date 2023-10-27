@@ -18,7 +18,7 @@ namespace Minesweeper.Rendering {
             // left
             graphics.FillRectangle(topLeft, new RectangleF(
                 bounds.X, bounds.Y,
-                size, bounds.Height));
+                size, bounds.Height - size));
 
             // bottom
             graphics.FillRectangle(bottomRight, new RectangleF(
@@ -41,7 +41,7 @@ namespace Minesweeper.Rendering {
                     } else continue;
 
                     graphics.FillRectangle(brush, new RectangleF(
-                        bounds.X + x, bounds.Y + bounds.Height + y - size, 1, 1));
+                    bounds.X + x, bounds.Y + bounds.Height + y - size, 1, 1));
                     graphics.FillRectangle(brush, new RectangleF(
                         bounds.X + bounds.Width + x - size, bounds.Y + y, 1, 1));
                 }
@@ -111,35 +111,6 @@ namespace Minesweeper.Rendering {
                 return new Transform(scale,
                     (windowSize.Width * 0.5F) - (imageSize.Width * scale * 0.5F), 0,
                     (int)(imageSize.Width * scale), windowSize.Height);
-            }
-        }
-
-        private static int RoundDown(float x, int m) {
-            return (int)(x - (x % m));
-        }
-
-        private static int RoundNearest(float x, int m) {
-            return RoundDown((int)(x + (m * 0.5f)), m);
-        }
-
-        public static void DrawSharpUpscaledImage(this Graphics graphics, Image image, RectangleF rectangle) {
-            Size size = new Size(RoundNearest(rectangle.Width, image.Width), RoundNearest(rectangle.Height, image.Height));
-
-            if (size.Width == 0 || size.Height == 0) {
-                // not possible to round down
-                graphics.DrawImage(image, rectangle);
-                return;
-            }
-
-            // round down to nearest multiple of image size
-            using (Bitmap bitmap = new Bitmap(size.Width, size.Height)) {
-                using (Graphics g = Graphics.FromImage(bitmap)) {
-                    g.InterpolationMode = InterpolationMode.NearestNeighbor;
-                    g.DrawImage(image, 0, 0, bitmap.Width, bitmap.Height);
-                }
-
-                // then scale up to fill remainder of size
-                graphics.DrawImage(bitmap, rectangle);
             }
         }
     }

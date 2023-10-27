@@ -47,6 +47,8 @@
             this.scale2Button = new System.Windows.Forms.MenuItem();
             this.scale3Button = new System.Windows.Forms.MenuItem();
             this.scale4Button = new System.Windows.Forms.MenuItem();
+            this.separator5 = new System.Windows.Forms.MenuItem();
+            this.fullscreenButton = new System.Windows.Forms.MenuItem();
             this.solverButton = new System.Windows.Forms.MenuItem();
             this.makeOneMoveButton = new System.Windows.Forms.MenuItem();
             this.solveButton = new System.Windows.Forms.MenuItem();
@@ -92,6 +94,7 @@
             // newButton
             // 
             this.newButton.Index = 0;
+            this.newButton.Shortcut = System.Windows.Forms.Shortcut.F2;
             this.newButton.Text = "&New";
             this.newButton.Click += new System.EventHandler(this.StartNewGame);
             // 
@@ -176,7 +179,9 @@
             this.scale1Button,
             this.scale2Button,
             this.scale3Button,
-            this.scale4Button});
+            this.scale4Button,
+            this.separator5,
+            this.fullscreenButton});
             this.windowButton.Text = "&Window";
             // 
             // scale1Button
@@ -202,6 +207,18 @@
             this.scale4Button.Index = 3;
             this.scale4Button.Text = "&4x Scale";
             this.scale4Button.Click += new System.EventHandler(this.ScaleWindow4);
+            // 
+            // separator5
+            // 
+            this.separator5.Index = 4;
+            this.separator5.Text = "-";
+            // 
+            // fullscreenButton
+            // 
+            this.fullscreenButton.Index = 5;
+            this.fullscreenButton.Shortcut = System.Windows.Forms.Shortcut.F11;
+            this.fullscreenButton.Text = "&Fullscreen";
+            this.fullscreenButton.Click += new System.EventHandler(this.ToggleFullscreen);
             // 
             // solverButton
             // 
@@ -256,7 +273,7 @@
             this.panel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel.Location = new System.Drawing.Point(0, 0);
             this.panel.Name = "panel";
-            this.panel.Size = new System.Drawing.Size(456, 227);
+            this.panel.Size = new System.Drawing.Size(348, 359);
             this.panel.TabIndex = 1;
             this.panel.Paint += new System.Windows.Forms.PaintEventHandler(this.PanelPaint);
             this.panel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.GameMouseDown);
@@ -268,7 +285,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(456, 227);
+            this.ClientSize = new System.Drawing.Size(348, 359);
             this.Controls.Add(this.panel);
             this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -276,7 +293,7 @@
             this.Name = "Form1";
             this.Text = "Minesweeper";
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.Resize += new System.EventHandler(this.FormResize);
+            this.SizeChanged += new System.EventHandler(this.FormSizeChanged);
             this.ResumeLayout(false);
 
         }
@@ -312,6 +329,8 @@
         private System.Windows.Forms.MenuItem solveButton;
         private System.Windows.Forms.MenuItem modesButton;
         private System.Windows.Forms.MenuItem logicButton;
+        private System.Windows.Forms.MenuItem separator5;
+        private System.Windows.Forms.MenuItem fullscreenButton;
     }
 }
 
